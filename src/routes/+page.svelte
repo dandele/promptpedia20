@@ -58,12 +58,51 @@
     }
   }
 
+  async function loadItems() {
+    const res = await fetch(`/api/database?tag=${selectedTag}`);
+    if (res.ok) {
+      const data = await res.json();
+      items = data.items;
+      hasMore = data.hasMore;
+      nextCursor = data.nextCursor;
+    }
+  }
+
   onMount(loadMoreItems);
+
+  let faqs = [
+    {
+      question: "What is an AI Prompt?",
+      answer: "An AI prompt is a specific input or instruction given to an AI model to generate a response.",
+      open: false
+    },
+    {
+      question: "What Are the Best Practices for Creating Effective AI Prompts?",
+      answer: "Effective AI prompts should be clear, concise, and specific to guide the AI in generating the desired output.",
+      open: false
+    },
+    {
+      question: "Why Are AI Prompts Important for Artificial Intelligence Applications?",
+      answer: "AI prompts are crucial as they directly influence the quality and relevance of the AI's responses.",
+      open: false
+    },
+    {
+      question: "Can AI Prompts Be Customized for Different Industries?",
+      answer: "Yes, AI prompts can be tailored to meet the specific needs and contexts of various industries.",
+      open: false
+    },
+    {
+      question: "Where Can I Find a Variety of AI Prompts?",
+      answer: "You can find a variety of AI prompts in our prompt directory, which is regularly updated.",
+      open: false
+    }
+  ];
 </script>
+
 
 <main>
   <section class="flex flex-col items-center justify-center text-center px-4 mt-16 mb-8
-                bg-no-repeat bg-contain bg-center relative min-h-[400px]"
+                bg-no-repeat bg-contain bg-center relative min-h-[600px]"
           style="background-image: url('/hero.webp');">
     <div class="relative z-10">
       <h1 class="text-5xl sm:text-6xl md:text-7xl font-extrabold mb-4 leading-tight">
@@ -76,6 +115,7 @@
         Learn from the best AI prompts and become a true AI master!
       </p>
     </div>
+  </section>
     
     <!-- Aggiungi la barra di ricerca -->
     <div class="w-full max-w-screen-xl mx-auto mt-8">
@@ -83,7 +123,7 @@
         type="text"
         bind:value={searchQuery}
         placeholder={placeholderText}
-        class="w-full p-4 rounded-lg bg-transparent text-white placeholder-gray-400 border border-gray-700 hover:border-gray-400 focus:border-white focus:outline-none transition-colors"
+        class="w-full p-4 rounded-lg bg-[#1d1e27] text-white placeholder-gray-400 border border-gray-700 hover:border-gray-400 focus:border-white focus:outline-none transition-colors"
       />
     </div>
 
@@ -92,21 +132,27 @@
       <nav class="flex overflow-x-auto py-2 gap-2">
         <button 
           class="px-4 py-2 rounded-full whitespace-nowrap transition-colors {selectedTag ? 'text-gray-400 hover:text-white' : 'bg-white text-black'}"
-          on:click={() => selectedTag = ''}
+          on:click={() => {
+            selectedTag = '';
+            loadItems();
+          }}
         >
           All
         </button>
         {#each tags as tag}
           <button 
             class="px-4 py-2 rounded-full whitespace-nowrap transition-colors {selectedTag === tag.name ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}"
-            on:click={() => selectedTag = tag.name}
+            on:click={() => {
+              selectedTag = tag.name;
+              loadItems();
+            }}
           >
             {tag.name}
           </button>
         {/each}
       </nav>
     </div>
-  </section>
+  
 
   <section class="mx-auto w-full px-4 mb-6 max-w-screen-xl">
     <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
@@ -138,6 +184,45 @@
       </div>
     {/if}
   </section>
+
+   <!-- Sezione Callout per la Newsletter -->
+   <section class="bg-[#1d1e27] text-white py-8 mt-8">
+    <div class="max-w-screen-xl mx-auto px-4 text-center">
+      <h2 class="text-3xl font-bold mb-4">Subscribe to the newsletter!</h2>
+      <p class="mb-6">Get a weekly curation of the best AI prompts and practices, totally free (and automated!).</p>
+      <input
+        type="email"
+        placeholder="Your best email"
+        class="p-4 rounded-lg bg-gray-800 text-white placeholder-gray-400 border border-gray-700 hover:border-gray-400 focus:border-white focus:outline-none transition-colors w-full max-w-md mx-auto"
+      />
+      <button class="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors">
+        Subscribe!
+      </button>
+    </div>
+  </section>
+
+  <!-- Sezione FAQ -->
+  <section class="bg-[#1d1e27] text-white py-8">
+    <div class="max-w-screen-xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-center mb-4">F.A.Q.</h2>
+      <p class="text-center mb-8">Get answers to your questions about our prompt directory</p>
+      
+      <div class="space-y-4">
+        {#each faqs as faq}
+          <div class="border border-gray-600 rounded-lg p-4">
+            <h3 class="font-semibold cursor-pointer" on:click={() => faq.open = !faq.open}>
+              {faq.question}
+            </h3>
+            {#if faq.open}
+              <p class="mt-2 text-gray-300">{faq.answer}</p>
+            {/if}
+          </div>
+        {/each}
+      </div>
+    </div>
+  </section>
+
+ 
 </main>
 
 

@@ -19,6 +19,7 @@ export async function GET({ url }) {
     const databaseId = env.NOTION_DATABASE_ID;
     const itemId = url.searchParams.get('id');
     const getTags = url.searchParams.get('tags') === 'true';
+    const selectedTag = url.searchParams.get('tag');
     
     // Se viene richiesta la lista dei tag
     if (getTags) {
@@ -43,18 +44,38 @@ export async function GET({ url }) {
     const limit = Number(url.searchParams.get('limit')) || 20;
     const cursor = url.searchParams.get('cursor');
     
-    const titleFilter = {
-      property: "Prompt Title",
-      title: {
-        does_not_equal: "Titolo del prompt non trovato."
+    const filters = [
+      {
+        property: "Prompt Title",
+        title: {
+          does_not_equal: "Untitled"
+        }
+      },
+      {
+        property: "Prompt Title",
+        title: {
+          does_not_equal: "Titolo del prompt non trovato."
+        }
       }
-    };
+    ];
+    
+    // Aggiungi il filtro per il tag se selezionato
+    if (selectedTag) {
+      filters.push({
+        property: "Tag",
+        select: {
+          equals: selectedTag
+        }
+      });
+    }
     
     const response = await notion.databases.query({
       database_id: databaseId,
       page_size: limit,
       start_cursor: cursor || undefined,
-      filter: titleFilter
+      filter: {
+        and: filters
+      }
     });
 
     const items = response.results

@@ -28,9 +28,14 @@ export let data: {
 const { item } = data;
 </script>
 
-<main class="max-w-4xl mx-auto px-4 py-8">
-  <article class="preset-outlined border-surface-700 rounded-lg p-6">
-    <h1 class="text-4xl font-bold mb-4">{item.title}</h1>
+<main class="flex items-center justify-center min-h-screen" style="background-image: url('/item_layout.svg'); 
+background-size: 80% 80%;
+background-position: center; 
+background-repeat: no-repeat;
+padding: 100px 20px;">
+  <article class="rounded-lg p-6 shadow-lg relative overflow-hidden" 
+           >
+    <h1 class="text-4xl font-bold text-white mb-4">{item.title}</h1>
     
     {#if item.lastEdited}
       <div class="text-sm text-gray-400 mb-6">
@@ -42,10 +47,8 @@ const { item } = data;
       <p class="text-lg mb-6 text-gray-300">{item.description}</p>
     {/if}
 
-    {#if item.content}
-      <div class="prose prose-invert max-w-none">
-        {@html item.content.replace(/\n/g, '<br>')}
-      </div>
-    {/if}
+    <div class="text-gray-200">
+      <p>{item.content}</p>
+    </div>
   </article>
 </main>
