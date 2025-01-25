@@ -7,6 +7,12 @@ interface Item {
   description: string;
 }
 
+interface ApiResponse {
+  items: Item[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}
+
 export const load: PageServerLoad = async ({ fetch }) => {
   const res = await fetch('/api/database');
   
@@ -14,9 +20,11 @@ export const load: PageServerLoad = async ({ fetch }) => {
     throw error(500, 'Failed to fetch items from API');
   }
 
-  const items: Item[] = await res.json();
+  const data: ApiResponse = await res.json();
 
   return {
-    items
+    items: data.items,
+    hasMore: data.hasMore,
+    nextCursor: data.nextCursor
   };
 };

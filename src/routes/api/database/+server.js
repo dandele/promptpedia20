@@ -4,73 +4,61 @@ import { env } from '$env/dynamic/private';
 
 const notion = new Client({ auth: env.NOTION_API_KEY });
 
+// Aggiungi la funzione isFullPage
+function isFullPage(item) {
+  return (
+    typeof item === 'object' &&
+    item !== null &&
+    item.object === 'page' &&
+    'properties' in item
+  );
+}
+
 export async function GET({ url }) {
   try {
     const databaseId = env.NOTION_DATABASE_ID;
-    const id = url.searchParams.get('id');
-
-    if (!databaseId) throw new Error('NOTION_DATABASE_ID is not defined');
-
-    if (id) {
-      const item = await getSingleItem(id);
+    const itemId = url.searchParams.get('id');
+    
+    // Se viene richiesto un item specifico
+    if (itemId) {
+      const item = await getSingleItem(itemId);
       if (!item) {
-        return json(null, { status: 404 });
+        return json({ error: 'Item not found' }, { status: 404 });
       }
       return json(item);
     }
-
-    const offset = parseInt(url.searchParams.get('offset') || '0');
-    const limit = parseInt(url.searchParams.get('limit') || '20');
-
+    
+    // Altrimenti restituisci la lista paginata
+    const limit = Number(url.searchParams.get('limit')) || 20;
+    const cursor = url.searchParams.get('cursor');
+    
+    const titleFilter = {
+      property: "Prompt Title",
+      title: {
+        does_not_equal: "Titolo del prompt non trovato."
+      }
+    };
+    
     const response = await notion.databases.query({
       database_id: databaseId,
-      filter: {
-        and: [
-          {
-            property: "Prompt Title",
-            title: {
-              is_not_empty: true
-            }
-          },
-          {
-            property: "Prompt Title",
-            title: {
-              does_not_equal: "Titolo del prompt non trovato."
-            }
-          }
-        ]
-      },
-      start_cursor: url.searchParams.get('cursor') || undefined,
-      page_size: limit
+      page_size: limit,
+      start_cursor: cursor || undefined,
+      filter: titleFilter
     });
 
-    const items = response.results.map((item) => {
-      const titleProperty = item.properties["Prompt Title"];
-      const title = titleProperty?.type === "title" && titleProperty.title.length > 0
-        ? titleProperty.title[0].text.content
-        : "Untitled";
-
-      const descriptionProperty = item.properties.Excerpt;
-      const description = descriptionProperty?.type === "rich_text" && descriptionProperty.rich_text.length > 0
-        ? descriptionProperty.rich_text[0].text.content
-        : "";
-
-      return {
-        id: item.id,
-        title,
-        description,
-        lastEdited: item.last_edited_time
-      };
-    });
+    const items = response.results
+      .filter(isFullPage)
+      .map(mapPageToItem);
 
     return json({
       items,
       hasMore: response.has_more,
       nextCursor: response.next_cursor
     });
+
   } catch (error) {
     console.error('Error:', error);
-    return json([], { status: 500 });
+    return json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
 
