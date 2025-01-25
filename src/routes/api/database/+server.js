@@ -18,6 +18,17 @@ export async function GET({ url }) {
   try {
     const databaseId = env.NOTION_DATABASE_ID;
     const itemId = url.searchParams.get('id');
+    const getTags = url.searchParams.get('tags') === 'true';
+    
+    // Se viene richiesta la lista dei tag
+    if (getTags) {
+      const response = await notion.databases.retrieve({
+        database_id: databaseId
+      });
+      
+      const tagOptions = response.properties.Tag.select.options;
+      return json({ tags: tagOptions });
+    }
     
     // Se viene richiesto un item specifico
     if (itemId) {
@@ -122,12 +133,18 @@ function mapPageToItem(page) {
       ? contentProperty.rich_text.map(t => t.text.content).join("")
       : "";
 
+    const tagProperty = page.properties.Tag;
+    const tag = tagProperty?.type === "select" && tagProperty.select
+      ? tagProperty.select.name
+      : "";
+
     return {
       id: page.id,
       title,
       description,
       content,
-      lastEdited: page.last_edited_time
+      lastEdited: page.last_edited_time,
+      tag
     };
   } catch (error) {
     console.error('Error mapping page to item:', error, page);

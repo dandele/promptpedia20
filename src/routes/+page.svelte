@@ -10,21 +10,32 @@
   const batchSize = 20;
   let nextCursor;
   let totalPrompts = data.total || 0;
+  let tags = [];
+  let selectedTag = '';
 
   // Placeholder dinamico con il numero totale di item
   $: placeholderText = `Search among more than 1000 prompts...`;
 
-  // Funzione di ricerca
-  $: {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filteredItems = items.filter(item => 
-        item.title.toLowerCase().includes(query) || 
-        item.description.toLowerCase().includes(query)
-      );
-    } else {
-      filteredItems = items;
+  onMount(async () => {
+    // Carica i tag disponibili
+    const res = await fetch('/api/database?tags=true');
+    if (res.ok) {
+      const data = await res.json();
+      tags = data.tags;
     }
+  });
+
+  // Funzione di filtro combinata (ricerca + tag)
+  $: {
+    filteredItems = items.filter(item => {
+      const matchesSearch = !searchQuery || 
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        item.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const matchesTag = !selectedTag || item.tag === selectedTag;
+      
+      return matchesSearch && matchesTag;
+    });
   }
 
   async function loadMoreItems() {
@@ -74,6 +85,26 @@
         placeholder={placeholderText}
         class="w-full p-4 rounded-lg bg-transparent text-white placeholder-gray-400 border border-gray-700 hover:border-gray-400 focus:border-white focus:outline-none transition-colors"
       />
+    </div>
+
+    <!-- Aggiungi la barra dei filtri dopo la barra di ricerca -->
+    <div class="w-full max-w-screen-xl mx-auto mt-4 px-4">
+      <nav class="flex overflow-x-auto py-2 gap-2">
+        <button 
+          class="px-4 py-2 rounded-full whitespace-nowrap transition-colors {selectedTag ? 'text-gray-400 hover:text-white' : 'bg-white text-black'}"
+          on:click={() => selectedTag = ''}
+        >
+          All
+        </button>
+        {#each tags as tag}
+          <button 
+            class="px-4 py-2 rounded-full whitespace-nowrap transition-colors {selectedTag === tag.name ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}"
+            on:click={() => selectedTag = tag.name}
+          >
+            {tag.name}
+          </button>
+        {/each}
+      </nav>
     </div>
   </section>
 
