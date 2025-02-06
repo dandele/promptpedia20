@@ -99,7 +99,6 @@
   ];
 </script>
 
-
 <main>
   <section class="flex flex-col items-center justify-center text-center px-4 mt-16 mb-8
                 bg-no-repeat bg-contain bg-center relative min-h-[600px]"
@@ -117,47 +116,44 @@
     </div>
   </section>
     
-    <!-- Aggiungi la barra di ricerca -->
-    <div class="w-full max-w-screen-xl mx-auto mt-8">
-      <input
-        type="text"
-        bind:value={searchQuery}
-        placeholder={placeholderText}
-        class="w-full p-4 rounded-lg bg-[#1d1e27] text-white placeholder-gray-400 border border-gray-700 hover:border-gray-400 focus:border-white focus:outline-none transition-colors"
-      />
-    </div>
+  <div class="w-full max-w-screen-xl mx-auto mt-8">
+    <input
+      type="text"
+      bind:value={searchQuery}
+      placeholder={placeholderText}
+      class="w-full p-4 rounded-lg bg-[#1d1e27] text-white placeholder-gray-400 border border-gray-700 hover:border-gray-400 focus:border-white focus:outline-none transition-colors"
+    />
+  </div>
 
-    <!-- Aggiungi la barra dei filtri dopo la barra di ricerca -->
-    <div class="w-full max-w-screen-xl mx-auto mt-4 px-4">
-      <nav class="flex overflow-x-auto py-2 gap-2">
+  <div class="w-full max-w-screen-xl mx-auto mt-4 px-4">
+    <nav class="flex overflow-x-auto py-2 gap-2">
+      <button 
+        class="px-4 py-2 rounded-full whitespace-nowrap transition-colors {selectedTag ? 'text-gray-400 hover:text-white' : 'bg-white text-black'}"
+        on:click={() => {
+          selectedTag = '';
+          loadItems();
+        }}
+      >
+        All
+      </button>
+      {#each tags as tag}
         <button 
-          class="px-4 py-2 rounded-full whitespace-nowrap transition-colors {selectedTag ? 'text-gray-400 hover:text-white' : 'bg-white text-black'}"
+          class="px-4 py-2 rounded-full whitespace-nowrap transition-colors {selectedTag === tag.name ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}"
           on:click={() => {
-            selectedTag = '';
+            selectedTag = tag.name;
             loadItems();
           }}
         >
-          All
+          {tag.name}
         </button>
-        {#each tags as tag}
-          <button 
-            class="px-4 py-2 rounded-full whitespace-nowrap transition-colors {selectedTag === tag.name ? 'bg-white text-black' : 'text-gray-400 hover:text-white'}"
-            on:click={() => {
-              selectedTag = tag.name;
-              loadItems();
-            }}
-          >
-            {tag.name}
-          </button>
-        {/each}
-      </nav>
-    </div>
-  
+      {/each}
+    </nav>
+  </div>
 
-  <section class="mx-auto w-full px-4 mb-6 max-w-screen-xl">
+  <section class="mx-auto w-full px-4 mb-8 mt-8 max-w-screen-xl">
     <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
       {#each filteredItems as item}
-        <li class="card preset-outlined border-[1px] w-full max-w-md p-4 text-center border border-surface-700 rounded-md">
+        <li class="border border-gray-600 transition-all duration-300 transform hover:border-white hover:scale-105 w-full max-w-md p-4 text-center rounded-md">
           <a href={`/item/${item.id}`} class="no-underline">
             <h2 class="text-white text-xl font-semibold mb-2 hover:text-gray-300 transition-colors">{item.title}</h2>
             <p class="text-gray-400">{item.description}</p>
@@ -166,7 +162,6 @@
       {/each}
     </ul>
     
-    <!-- Mostra il pulsante "Load More" solo se non c'è una ricerca attiva -->
     {#if !searchQuery}
       <div class="text-center mt-6">
         {#if hasMore}
@@ -185,8 +180,8 @@
     {/if}
   </section>
 
-   <!-- Sezione Callout per la Newsletter -->
-   <section class="bg-[#1d1e27] text-white py-8 mt-8">
+  <!-- Sezione Callout per la Newsletter -->
+  <section class="bg-[#1d1e27] text-white py-8 mt-8">
     <div class="max-w-screen-xl mx-auto px-4 text-center">
       <h2 class="text-3xl font-bold mb-4">Subscribe to the newsletter!</h2>
       <p class="mb-6">Get a weekly curation of the best AI prompts and practices, totally free (and automated!).</p>
@@ -222,7 +217,6 @@
     </div>
   </section>
 
- 
 </main>
 
 
